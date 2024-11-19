@@ -5,42 +5,53 @@ const UserModel = require('../../models/UserModel')
 const paymentController = async (req, res) => {
     try{
         const { cartItems} = req.body
+        console.log(cartItems)
         const user = await UserModel.findOne({_id: req.userId})
         const params = {
             submit_type : 'pay',
             mode : 'payment',
             payment_method_types : ['card'],
-            billing_adderess_collection : 'auto',
-            shipping_option : [
+            billing_address_collection : 'auto',
+            shipping_options : [
                 {
                     shipping_rate : 'shr_1Psq2jB9xSXwpeDywz6pKfKB'
                 }
             ],
-            custumer_email : user.email,
+            customer_email : user.email,
             line_items: cartItems.map((item, index)=>{
                 return {
                     price_data: {
                         currency: 'inr',
                         product_data: {
-                            name: item.productName,
-                            images: [item.image]
+                            name: item.productId.productName,
+                            images: [item.productId.image[0]],
+                            metadata: {
+                                productId : item.productId._id
+                            }
                         },
-                        unit_amount: item.price * 100
+                        unit_amount: item.productId.selling * 100
                     },
-                    quantity: item.quantity
+                    adjustable_quantity : {
+                        enabled:true,
+                        minimum: 1
+                    },
+                    quantity : item.quantity
                 }
             }
         ),
-            success_url: `${process.env.CLIENT_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.CLIENT_URL}/cart`
+            success_url: `${process.env.CLIENT_URL}/order-success`,
+            cancel_url: `${process.env.CLIENT_URL}/cancel`
     }
 
-        const session = await stripe.checkout.sessions.create()
+        const session = await stripe.checkout.sessions.create(params)
 
-        res.status(200).json(session)
+        console.log('Stripe session created:', session.id);
+
+        res.status(200).json({ success: true, id: session.id });
     }catch(err){
+        console.error('Error creating Stripe session:', err);
         res.status(403).json({
-            message: err.message || err,
+            message: err.message || 'An error occurred',
             error: true,
             success: false
           });

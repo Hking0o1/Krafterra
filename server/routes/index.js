@@ -21,7 +21,10 @@ const deleteAddToCartProduct = require('../controller/User/deleteAddToCartProduc
 const searchProduct = require('../controller/product/searchProduct');
 const filterProduct = require('../controller/product/filterProduct');
 const paymentController = require('../controller/order/paymentController');
-
+const addReply = require('../controller/reviewProduct/replyReview');
+const deleteReview = require('../controller/reviewProduct/deleteReview');
+const editReview = require('../controller/reviewProduct/editReview');
+const createReview = require('../controller/reviewProduct/createReview');
 
 router.post('/Register', userRegister);
 router.post('/login', userLoginController);
@@ -43,5 +46,8 @@ router.post('/delete-cart-product', deleteAddToCartProduct)
 router.get('/search', searchProduct)
 router.post("/filter-product", filterProduct)
 router.post('/checkout',authToken, paymentController)
-
+router.post('/reviews', createReview);
+router.put('/reviews/:reviewId', authToken, editReview);
+router.post('/reviews/:reviewId/replies', authToken, addReply );
+router.delete('/reviews/:productId/:reviewId', authToken, deleteReview);
 module.exports = router

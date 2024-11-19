@@ -18,6 +18,7 @@ async function authToken(req, res, next) {
             return res.status(401).json({ message: 'User ID not found in token', error: true });
         }
         req.userId = decoded?.user.id;
+        req.userRole = decoded?.user.role;
         next();
     } catch (error) {
         return res.status(401).json({ message: error , error: true });
